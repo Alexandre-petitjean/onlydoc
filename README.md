@@ -15,23 +15,29 @@
 ## Install dependencies
 ```bash
 sudo apt update -y && sudo apt upgrade -y
-apt install python3-venv postgresql nginx
+apt install -y python3-venv postgresql nginx
 ```
 
 ## Setup the Postgresql server 
 
 > Test the Postgresql install
 ```bash
-systemctl status postgresql -> return active
-netstat -ntlp -> postgres is listening on 5432
+systemctl status postgresql
+# return active
+netstat -ntlp
+# postgres is listening on 5432
 ```
 
 > Postgresql cheat sheet
 ```bash
-Connexion : sudo -u postgres psql
-List database : \l
-List user : \du
-Exit : \q
+# Connexion
+sudo -u postgres psql
+# List database
+\l
+# List user
+\du
+# Exit
+\q
 ```
 
 ## Configure the datatase
@@ -95,4 +101,69 @@ cd /opt/myproject/
 sudo /opt/venv/bin/gunicorn -b 127.0.0.1:8000 myproject.wsgi
 ```
 
+## Configure the gunicorn service
+
+First create our user "mylinuxuser" with no right to login and with no home.
+
+```bash
+sudo useradd --system --no-create-home --shell=/sbin/nologin mylinuxuser
+```
+Then create the service, an exemple is in the repo "mygunicorn.service"
+
+```bash
+sudo nano /etc/systemd/system/mygunicorn.service
+```
+
+Don't forget to start and enable the service !
+
+```bash
+systemctl start mygunicorn.service
+systemctl enable mygunicorn.service
+```
+
+After that you can test if the service is working correctly
+
+```bash
+systemctl status mygunicorn.service
+# return active
+netstat -ntlp
+# gunicorn use the port 8000
+
+# display the django home page
+curl://127.0.0.1:8000
+
+# for debug
+journalctl -u mygunicorn.service
+```
+
+## Configure the nginx server
+
+For the SSL certificate I only provide exemple with Self signed cert.
+
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/myproject-selfsigned.key -out /etc/ssl/certs/myproject-selfsigned.crt
+```
+
+Test the install
+
+```bash
+systemctl status nginx
+netstat -ntlp
+# port 80
+```
+
+Create the virtual host conf file, an exemple is in the project "myproject.conf"
+```bash
+sudo nano /etc/nginx/sites-available/myproject.conf
+```
+
+Create a symbolic link between sites-available and sites-enabled
+```bash
+sudo ln -s /etc/nginx/sites-{available,enabled}/myproject.conf
+systemctl reload nginx
+```
+
+> Done !
+>
+> You can test in your web browser https://yourhostname.local 
 
