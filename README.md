@@ -15,7 +15,10 @@
 ## Install dependencies
 ```bash
 sudo apt update -y && sudo apt upgrade -y
-apt install -y python3-venv postgresql nginx
+sudo apt install -y python3-venv postgresql nginx net-tools
+
+# Install git if you want the cookiecutter setup
+sudo apt install -y git
 ```
 
 ## Setup the Postgresql server 
@@ -49,9 +52,20 @@ GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
 ```
 
 ## Setup the django project
+
 ### Install the virtual env
+
+#### Cookiecutter project (Recommended)
 ```bash
-python3 -m venv /opt/venv/
+sudo python3 -m venv /opt/venv/
+sudo /opt/venv/bin/python -m pip install "cookiecutter>=1.7.0"
+sudo /opt/venv/bin/python -m cookiecutter https://github.com/cookiecutter/cookiecutter-django
+```
+
+
+#### Django startproject command
+```bash
+sudo python3 -m venv /opt/venv/
 sudo /opt/venv/bin/python -m pip install django
 sudo /opt/venv/bin/django-admin startprojet myproject
 sudo /opt/venv/bin/python -m pip install psycopg2-binary
