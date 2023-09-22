@@ -1,18 +1,20 @@
 # Django app deployement on Linux server
 
-# Requirements
+## Requirements
 
 * A linux server (Debian or Ubuntu).
 * A sodoer user.
+
 > For this exemple the project is named "myproject".
-> 
+>
 > The user for the service is named "mylinuxuser".
-> 
+>
 > The project will be located in /opt/.
-> 
+>
 > The SGBD used is Postgresql.
 
 ## Install dependencies
+
 ```bash
 sudo apt update -y && sudo apt upgrade -y
 sudo apt install -y python3-venv postgresql nginx net-tools
@@ -21,9 +23,10 @@ sudo apt install -y python3-venv postgresql nginx net-tools
 sudo apt install -y git
 ```
 
-## Setup the Postgresql server 
+## Setup the Postgresql server
 
-> Test the Postgresql install
+Test the Postgresql install
+
 ```bash
 systemctl status postgresql
 # return active
@@ -31,7 +34,8 @@ netstat -ntlp
 # postgres is listening on 5432
 ```
 
-> Postgresql cheat sheet
+Postgresql cheat sheet
+
 ```bash
 # Connexion
 sudo -u postgres psql
@@ -44,6 +48,7 @@ sudo -u postgres psql
 ```
 
 ## Configure the datatase
+
 ```bash
 sudo -u postgres psql
 CREATE DATABASE mydb;
@@ -53,17 +58,45 @@ GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser;
 
 ## Setup the django project
 
-### Install the virtual env
+Here you have two options, either the classic Django `startproject cli` or the `cookiecutter framework`. I personally recommend the cookiecutter framework for all the pre configured option and module. But if it's your first time with django, go for the `Django startproject command setup`.
 
-#### Cookiecutter project (Recommended)
+### Cookiecutter framework setup (Recommended)
+
+Check the last version of cookiecutter before pulling the module.
+
+> <https://github.com/cookiecutter/cookiecutter-django>
+
 ```bash
 sudo python3 -m venv /opt/venv/
 sudo /opt/venv/bin/python -m pip install "cookiecutter>=1.7.0"
 sudo /opt/venv/bin/python -m cookiecutter https://github.com/cookiecutter/cookiecutter-django
 ```
 
+#### Django settings
 
-#### Django startproject command
+> Update your database settings following the postgresql configuration
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydb',
+    'USER': 'myuser',
+    'PASSWORD': 'mypass',
+    'HOST': '127.0.0.1',
+    'PORT': 5432,
+    }
+}
+```
+
+> Only modify the MEDIA_ROOT url
+
+```python
+MEDIA_ROOT = BASE_DIR / 'uploads'
+```
+
+### Django startproject command setup
+
 ```bash
 sudo python3 -m venv /opt/venv/
 sudo /opt/venv/bin/python -m pip install django
@@ -71,23 +104,26 @@ sudo /opt/venv/bin/django-admin startprojet myproject
 sudo /opt/venv/bin/python -m pip install psycopg2-binary
 sudo /opt/venv/bin/python -m pip install gunicorn
 ```
-### Django settings
+
+#### Django settings
 
 > Update your database settings following the postgresql configuration
+
 ```python
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'mydb',
-	'USER': 'myuser',
-	'PASSWORD': 'mypass',
-	'HOST': '127.0.0.1',
-	'PORT': 5432,
+    'USER': 'myuser',
+    'PASSWORD': 'mypass',
+    'HOST': '127.0.0.1',
+    'PORT': 5432,
     }
 }
 ```
 
 > Add the settings for static and media files
+
 ```python
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'static'
@@ -95,9 +131,9 @@ MEDIA_URL = 'media'
 MEDIA_ROOT = BASE_DIR / 'uploads'
 ```
 
-### Migration and static file
+## (Both setup) Migration and static file
 
-```
+```bash
 sudo /opt/venv/bin/python ./myproject/manage.py migrate
 sudo /opt/venv/bin/python manage.py collectstatic
 sudo mkdir /opt/myproject/uploads
